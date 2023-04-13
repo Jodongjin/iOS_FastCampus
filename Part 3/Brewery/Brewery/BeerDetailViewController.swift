@@ -1,0 +1,93 @@
+//
+//  BeerDetailViewController.swift
+//  Brewery
+//
+//  Created by 조동진 on 2022/02/16.
+//
+
+import UIKit
+
+class BeerDetailViewController: UITableViewController {
+  var beer: Beer?
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    
+    title = beer?.name ?? "이름 없는 맥주"
+    
+    tableView = UITableView(frame: tableView.frame, style: .insetGrouped) // style 변경
+    tableView.register(UITableViewCell.self, forCellReuseIdentifier: "BeerDetailListCell") // 기본 셀 사용
+    tableView.rowHeight = UITableView.automaticDimension
+    
+    let frame = CGRect(x: 0, y: 0, width: view.frame.width, height: 300)
+    let headerView = UIImageView(frame: frame)
+    let imageURL = URL(string: beer?.imageURL ?? "")
+    
+    headerView.contentMode = .scaleAspectFit
+    headerView.kf.setImage(with: imageURL, placeholder: UIImage(named: "beer_icon"))
+    
+    tableView.tableHeaderView = headerView
+  }
+}
+
+// UITableView DataSource, Delegate
+extension BeerDetailViewController {
+  override func numberOfSections(in tableView: UITableView) -> Int {
+    return 4
+  }
+  
+  override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    switch section {
+    case 3: // 마지막 섹션인 FOOD PARING만 개수만큼 row 가짐
+      return beer?.foodPairing?.count ?? 0
+    default:
+      return 1
+    }
+  }
+  
+  // section title configure
+  override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    switch section {
+    case 0:
+      return "ID"
+    case 1:
+      return "Description"
+    case 2:
+      return "Brewers Tips"
+    case 3:
+      let isfoodPairingEmpty = beer?.foodPairing?.isEmpty ?? true // 없으면 true (비어있음)
+      return isfoodPairingEmpty ? nil : "Food Paring"
+    default:
+      return nil
+    }
+  }
+  
+  // cell configure
+  override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    let cell = UITableViewCell(style: .default, reuseIdentifier: "BeerDetailListCell")
+    
+    cell.textLabel?.numberOfLines = 0 // 기본 셀에 기본으로 있는 textLabel
+    cell.selectionStyle = .none
+    
+    switch indexPath.section {
+    case 0:
+      cell.textLabel?.text = String(describing: beer?.id ?? 0)
+      return cell
+    case 1:
+      cell.textLabel?.text = beer?.description ?? "설명 없는 맥주"
+      return cell
+    case 2:
+      cell.textLabel?.text = beer?.brewersTips ?? "팁 없는 맥주"
+      return cell
+    case 3:
+      cell.textLabel?.text = beer?.foodPairing?[indexPath.row] ?? ""
+      return cell
+    default:
+      return cell
+    }
+  }
+}
+
+/*
+ DispatchQueue.main.async: UITableViewController.tableView must be used from main thread only
+ */
